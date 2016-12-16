@@ -31706,7 +31706,7 @@
 /* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -31732,20 +31732,35 @@
 	var FilterableProductTable = function (_React$Component) {
 	    _inherits(FilterableProductTable, _React$Component);
 	
-	    function FilterableProductTable() {
+	    function FilterableProductTable(props) {
 	        _classCallCheck(this, FilterableProductTable);
 	
-	        return _possibleConstructorReturn(this, (FilterableProductTable.__proto__ || Object.getPrototypeOf(FilterableProductTable)).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, (FilterableProductTable.__proto__ || Object.getPrototypeOf(FilterableProductTable)).call(this, props));
+	
+	        _this.state = {
+	            searchText: '',
+	            isShowInStockOnly: true
+	        };
+	        _this.updateState = _this.updateState.bind(_this);
+	        return _this;
 	    }
 	
 	    _createClass(FilterableProductTable, [{
-	        key: "render",
+	        key: 'updateState',
+	        value: function updateState(searchText, isShowInStockOnly) {
+	            this.setState({
+	                searchText: searchText,
+	                isShowInStockOnly: isShowInStockOnly
+	            });
+	        }
+	    }, {
+	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
-	                "div",
+	                'div',
 	                null,
-	                _react2.default.createElement(SearchBar, null),
-	                _react2.default.createElement(ProductTable, { productData: this.props.productData })
+	                _react2.default.createElement(SearchBar, { searchText: this.state.searchText, isShowInStockOnly: this.state.isShowInStockOnly, updateState: this.updateState }),
+	                _react2.default.createElement(ProductTable, { productData: this.props.productData, searchText: this.state.searchText, isShowInStockOnly: this.state.isShowInStockOnly })
 	            );
 	        }
 	    }]);
@@ -31758,22 +31773,30 @@
 	var SearchBar = function (_React$Component2) {
 	    _inherits(SearchBar, _React$Component2);
 	
-	    function SearchBar() {
+	    function SearchBar(props) {
 	        _classCallCheck(this, SearchBar);
 	
-	        return _possibleConstructorReturn(this, (SearchBar.__proto__ || Object.getPrototypeOf(SearchBar)).apply(this, arguments));
+	        var _this2 = _possibleConstructorReturn(this, (SearchBar.__proto__ || Object.getPrototypeOf(SearchBar)).call(this, props));
+	
+	        _this2.onChange = _this2.onChange.bind(_this2);
+	        return _this2;
 	    }
 	
 	    _createClass(SearchBar, [{
-	        key: "render",
+	        key: 'onChange',
+	        value: function onChange(e) {
+	            this.props.updateState(this.refs.filterTextInput.value, this.refs.inStockOnlyInput.checked);
+	        }
+	    }, {
+	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
-	                "form",
+	                'form',
 	                null,
-	                _react2.default.createElement("input", { type: "text", placeholder: "Search.." }),
-	                _react2.default.createElement("br", null),
-	                _react2.default.createElement("input", { type: "checkbox" }),
-	                " Only show products in stock"
+	                _react2.default.createElement('input', { type: 'text', placeholder: 'Search..', value: this.props.searchText, ref: 'filterTextInput', onChange: this.onChange }),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement('input', { type: 'checkbox', checked: this.props.isShowInStockOnly, ref: 'inStockOnlyInput', onChange: this.onChange }),
+	                ' Only show products in stock'
 	            );
 	        }
 	    }]);
@@ -31791,11 +31814,15 @@
 	    }
 	
 	    _createClass(ProductTable, [{
-	        key: "render",
+	        key: 'render',
 	        value: function render() {
 	            var rows = [],
-	                currCategory = '';
+	                currCategory = '',
+	                me = this;
 	            this.props.productData.forEach(function (product) {
+	                if (me.props.isShowInStockOnly && !product.stocked || me.props.searchText && product.name.indexOf(me.props.searchText) == -1) {
+	                    return;
+	                }
 	                if (currCategory !== product.category) {
 	                    rows.push(_react2.default.createElement(ProductCategoryRow, { category: product.category, key: product.category }));
 	                }
@@ -31803,28 +31830,28 @@
 	                currCategory = product.category;
 	            });
 	            return _react2.default.createElement(
-	                "table",
+	                'table',
 	                null,
 	                _react2.default.createElement(
-	                    "thead",
+	                    'thead',
 	                    null,
 	                    _react2.default.createElement(
-	                        "tr",
+	                        'tr',
 	                        null,
 	                        _react2.default.createElement(
-	                            "td",
+	                            'td',
 	                            null,
-	                            " Name "
+	                            ' Name '
 	                        ),
 	                        _react2.default.createElement(
-	                            "td",
+	                            'td',
 	                            null,
-	                            " Price "
+	                            ' Price '
 	                        )
 	                    )
 	                ),
 	                _react2.default.createElement(
-	                    "tbody",
+	                    'tbody',
 	                    null,
 	                    rows
 	                )
@@ -31845,14 +31872,14 @@
 	    }
 	
 	    _createClass(ProductCategoryRow, [{
-	        key: "render",
+	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
-	                "tr",
+	                'tr',
 	                null,
 	                _react2.default.createElement(
-	                    "td",
-	                    { colSpan: "2" },
+	                    'td',
+	                    { colSpan: '2' },
 	                    this.props.category
 	                )
 	            );
@@ -31872,18 +31899,28 @@
 	    }
 	
 	    _createClass(ProductRow, [{
-	        key: "render",
+	        key: 'render',
 	        value: function render() {
+	            var name = '';
+	            if (!this.props.product.stocked) {
+	                name = _react2.default.createElement(
+	                    'span',
+	                    { style: { color: 'red' } },
+	                    this.props.product.name
+	                );
+	            } else {
+	                name = this.props.product.name;
+	            }
 	            return _react2.default.createElement(
-	                "tr",
+	                'tr',
 	                null,
 	                _react2.default.createElement(
-	                    "td",
+	                    'td',
 	                    null,
-	                    this.props.product.name
+	                    name
 	                ),
 	                _react2.default.createElement(
-	                    "td",
+	                    'td',
 	                    null,
 	                    this.props.product.price
 	                )
